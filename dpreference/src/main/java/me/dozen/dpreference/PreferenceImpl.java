@@ -3,6 +3,8 @@ package me.dozen.dpreference;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import java.util.Set;
+
 /**
  * Created by wangyida on 15/12/18.
  */
@@ -52,6 +54,20 @@ class PreferenceImpl implements IPrefImpl {
         final SharedPreferences settings =
                 mContext.getSharedPreferences(mPrefName, Context.MODE_PRIVATE);
         settings.edit().putInt(key, value).apply();
+    }
+
+    @Override
+    public Set<String> getPrefStringSet(String key, Set<String> defaultValue) {
+        final SharedPreferences settings =
+                mContext.getSharedPreferences(mPrefName, Context.MODE_PRIVATE);
+        return settings.getStringSet(key, defaultValue);
+    }
+
+    @Override
+    public void setPrefStringSet(String key, Set<String> value) {
+        final SharedPreferences settings =
+                mContext.getSharedPreferences(mPrefName, Context.MODE_PRIVATE);
+        settings.edit().putStringSet(key, value).apply();
     }
 
     public void increasePrefInt(final String key) {

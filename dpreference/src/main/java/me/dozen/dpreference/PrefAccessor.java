@@ -5,6 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 
+import java.util.Set;
+
 /**
  * Created by wangyida on 15/12/18.
  */
@@ -54,6 +56,18 @@ class PrefAccessor {
         return value == 1;
     }
 
+    public static Set<String> getStringSet(Context context, String name, String key, Set<String> defaultValue) {
+        Uri URI = PreferenceProvider.buildUri(name, key, PreferenceProvider.PREF_STRING_SET);
+        Set<String> value = defaultValue;
+        Cursor cursor = context.getContentResolver().query(URI, null, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            String cursorString = cursor.getString(cursor.getColumnIndex(PreferenceProvider.PREF_VALUE));
+            value = StringSetConverter.decode(cursorString);
+        }
+        IOUtils.closeQuietly(cursor);
+        return value;
+    }
+
     public static void remove(Context context, String name, String key) {
         Uri URI = PreferenceProvider.buildUri(name, key, PreferenceProvider.PREF_STRING);
         context.getContentResolver().delete(URI, null, null);
@@ -88,6 +102,14 @@ class PrefAccessor {
         ContentValues cv = new ContentValues();
         cv.put(PreferenceProvider.PREF_KEY, key);
         cv.put(PreferenceProvider.PREF_VALUE, value);
+        context.getContentResolver().update(URI, cv, null, null);
+    }
+
+    public static void setStringSet(Context context, String name, String key, Set<String> value) {
+        Uri URI = PreferenceProvider.buildUri(name, key, PreferenceProvider.PREF_STRING_SET);
+        ContentValues cv = new ContentValues();
+        cv.put(PreferenceProvider.PREF_KEY, key);
+        cv.put(PreferenceProvider.PREF_VALUE, StringSetConverter.encode(value));
         context.getContentResolver().update(URI, cv, null, null);
     }
 }

@@ -9,9 +9,7 @@ import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.support.v4.util.ArrayMap;
 import android.text.TextUtils;
-import android.util.Log;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,6 +25,7 @@ public class PreferenceProvider extends ContentProvider {
     public static final String CONTENT_PREF_STRING_URI = "content://" + AUTHORITY + "/string/";
     public static final String CONTENT_PREF_INT_URI = "content://" + AUTHORITY + "/integer/";
     public static final String CONTENT_PREF_LONG_URI = "content://" + AUTHORITY + "/long/";
+    public static final String CONTENT_PREF_STRING_SET_URI = "content://" + AUTHORITY + "/string_set/";
 
 
     public static final String PREF_KEY = "key";
@@ -36,6 +35,7 @@ public class PreferenceProvider extends ContentProvider {
     public static final int PREF_STRING = 2;
     public static final int PREF_INT = 3;
     public static final int PREF_LONG = 4;
+    public static final int PREF_STRING_SET = 5;
 
     private static final UriMatcher sUriMatcher;
 
@@ -45,6 +45,7 @@ public class PreferenceProvider extends ContentProvider {
         sUriMatcher.addURI(AUTHORITY, "string/*/*", PREF_STRING);
         sUriMatcher.addURI(AUTHORITY, "integer/*/*", PREF_INT);
         sUriMatcher.addURI(AUTHORITY, "long/*/*", PREF_LONG);
+        sUriMatcher.addURI(AUTHORITY, "string_set/*/*", PREF_STRING);
 
     }
 
@@ -79,6 +80,11 @@ public class PreferenceProvider extends ContentProvider {
                     cursor = preferenceToCursor(getDPreference(model.getName()).getPrefLong(model.getKey(), -1));
                 }
                 break;
+            case PREF_STRING_SET:
+                if (getDPreference(model.getName()).hasKey(model.getKey())) {
+                    cursor = preferenceToCursor(getDPreference(model.getName()).getPrefStringSet(model.getKey(), null));
+                }
+                break;
         }
         return cursor;
     }
@@ -102,6 +108,7 @@ public class PreferenceProvider extends ContentProvider {
             case PREF_LONG:
             case PREF_STRING:
             case PREF_INT:
+            case PREF_STRING_SET:
                 PrefModel model = getPrefModelByUri(uri);
                 if (model != null) {
                     getDPreference(model.getName()).removePreference(model.getKey());
@@ -116,7 +123,7 @@ public class PreferenceProvider extends ContentProvider {
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         PrefModel model = getPrefModelByUri(uri);
-        if(model == null) {
+        if (model == null) {
             throw new IllegalArgumentException("update prefModel is null");
         }
         switch (sUriMatcher.match(uri)) {
@@ -131,6 +138,9 @@ public class PreferenceProvider extends ContentProvider {
                 break;
             case PREF_INT:
                 persistInt(model.getName(), values);
+                break;
+            case PREF_STRING_SET:
+                persistStringSet(model.getName(), values);
                 break;
             default:
                 throw new IllegalStateException("update unsupported uri : " + uri);
@@ -183,6 +193,15 @@ public class PreferenceProvider extends ContentProvider {
         getDPreference(name).setPrefString(kString, vString);
     }
 
+    private void persistStringSet(String name, ContentValues values) {
+        if (values == null) {
+            throw new IllegalArgumentException(" values is null!!!");
+        }
+        String kString = values.getAsString(PREF_KEY);
+        String vString = values.getAsString(PREF_VALUE);
+        getDPreference(name).setPrefStringSet(kString, StringSetConverter.decode(vString));
+    }
+
     private static Map<String, IPrefImpl> sPreferences = new ArrayMap<>();
 
     private IPrefImpl getDPreference(String name) {
@@ -220,6 +239,8 @@ public class PreferenceProvider extends ContentProvider {
                 return PreferenceProvider.CONTENT_PREF_LONG_URI;
             case PreferenceProvider.PREF_STRING:
                 return PreferenceProvider.CONTENT_PREF_STRING_URI;
+            case PreferenceProvider.PREF_STRING_SET:
+                return PreferenceProvider.CONTENT_PREF_STRING_SET_URI;
         }
         throw new IllegalStateException("unsupport preftype : " + type);
     }

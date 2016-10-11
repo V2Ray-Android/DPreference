@@ -3,6 +3,8 @@ package me.dozen.dpreference;
 
 import android.content.Context;
 
+import java.util.Set;
+
 /**
  * Created by wangyida on 15-4-9.
  */
@@ -43,6 +45,10 @@ public class DPreference {
         PrefAccessor.setInt(mContext, mName, key, value);
     }
 
+    public void setPrefStringSet(final String key, final Set<String> value) {
+        PrefAccessor.setStringSet(mContext, mName, key, value);
+    }
+
     public int getPrefInt(final String key, final int defaultValue) {
         return PrefAccessor.getInt(mContext, mName, key, defaultValue);
     }
@@ -53,6 +59,10 @@ public class DPreference {
 
     public long getPrefLong(final String key, final long defaultValue) {
         return PrefAccessor.getLong(mContext, mName, key, defaultValue);
+    }
+
+    public Set<String> getPrefStringSet(final String key, final Set<String> defaultValue) {
+        return PrefAccessor.getStringSet(mContext, mName, key, defaultValue);
     }
 
     public void removePreference(final String key) {

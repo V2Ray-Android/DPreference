@@ -1,6 +1,8 @@
 package me.dozen.dpreference;
 
 
+import java.util.Set;
+
 /**
  * Created by wangyida on 15/12/18.
  */
@@ -25,6 +27,10 @@ interface IPrefImpl {
     void setPrefLong(final String key, final long value);
 
     long getPrefLong(final String key, final long defaultValue);
+
+    Set<String> getPrefStringSet(String key, Set<String> defaultValue);
+
+    void setPrefStringSet(String key, Set<String> value);
 
     void removePreference(final String key);
 
